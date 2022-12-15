@@ -5,9 +5,13 @@
         Игра с {{ game.name }}
       </h3>
     </header>
+    <h3 class="text-center">
+      <span v-if="currentGame.turn === 'enemy' && currentGame.enemyBoard.active">Ход противника</span>
+      <span v-if="currentGame.turn === 'player' && currentGame.playerBoard.active">Ваш ход</span>
+    </h3>
     <section class="row">
       <div class="col-md-6">
-        <h4>Ваше поле</h4>
+        <h4 @click="$store.dispatch('game/setTurn', { turn: 'player' })">Ваше поле</h4>
         <table>
           <tr>
             <td></td>
@@ -28,13 +32,15 @@
         <ul>
           <li v-for="(error,idx) in boardErrors" :key="idx">{{ error }}</li>
         </ul>
-        <button v-if="boardErrors && !boardErrors.length" class="btn btn-success">
+        <button v-if="boardErrors && !boardErrors.length && !this.currentGame.playerBoard.active" class="btn btn-success" @click="clickedReady">
           Готов!
         </button>
       </div>
       <div class="col-md-6 text-md-right pt-4 pt-md-0">
-        <h4>Поле противника</h4>
-        <table class="float-md-right">
+        <h4 @click="$store.dispatch('game/setActive', { board: 'enemy' }); $store.dispatch('game/setTurn', { turn: 'enemy' })">
+          Поле противника
+        </h4>
+        <table class="float-md-right" v-if="this.currentGame.enemyBoard.active">
           <tr>
             <td></td>
             <td v-for="col in 10" :key="col" class="game-cell" :class="cellClass(0, col, boards[1])">
@@ -47,10 +53,13 @@
                 :class="cellClass(row, col, boards[1])" @click="clickedCell(row, col, boards[1])">
               <span class="ship"></span>
               <span class="missed"></span>
-              <span class="fired"></span>
+              <span class="fired">🞨</span>
             </td>
           </tr>
         </table>
+        <div v-else class="game-wait">
+          <h2>Противник расставляет корабли</h2>
+        </div>
       </div>
     </section>
   </div>
@@ -104,6 +113,7 @@ export default {
     if (!this.currentUser) {
       this.$router.push('/login');
     }
+    this.$store.dispatch('game/setCellFilled', {})
   },
   methods: {
     cellClasses: (cell) => {
@@ -126,11 +136,12 @@ export default {
       const cell = gameBoard.cells.find(item => item.row === row && item.col === col);
       if (cell && cell.filled) {
         classes.push('game-filled')
-      }
-      if (cell && cell.fired) {
+        if (cell.fired) {
+          classes.push('game-filled-fired')
+        }
+      } else if(cell && cell.fired) {
         classes.push('game-fired')
-      }
-      if (cell && cell.missed) {
+      } else if (cell && cell.missed) {
         classes.push('game-missed')
       }
       return classes
@@ -148,7 +159,7 @@ export default {
     },
     clickedReady() {
       if (!this.boardErrors.length) {
-        this.$store.dispatch('game/setActive')
+        this.$store.dispatch('game/setActive', { board: 'player' })
       }
     }
   }
@@ -156,8 +167,13 @@ export default {
 </script>
 
 <style>
-.game-row {
-
+.game-wait {
+  width: 331px;
+  height: 331px;
+  display: grid;
+  align-items: center;
+  text-align: center;
+  float: right;
 }
 
 .game-cell {
@@ -182,7 +198,7 @@ table:hover .game-cell.game-highlight {
 }
 
 .missed {
-  /*display: none;*/
+  display: none;
   width: 5px;
   height: 5px;
   background: black;
@@ -191,11 +207,7 @@ table:hover .game-cell.game-highlight {
 }
 
 .fired {
-  /*display: none;*/
-  width: 5px;
-  height: 5px;
-  background: black;
-  border-radius: 5px;
+  display: none;
   vertical-align: middle;
 }
 
@@ -209,5 +221,9 @@ table:hover .game-cell.game-highlight {
 
 .game-fired .fired {
   display: inline-block;
+}
+
+.game-filled-fired .ship {
+  background-color: red;
 }
 </style>

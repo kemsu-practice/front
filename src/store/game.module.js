@@ -2,14 +2,15 @@
 
 const initialState = {
   enemyBoard: {
-    active: true,
+    active: false,
     cells: [],
   },
   playerBoard: {
     active: false,
     errors: [],
     cells: [],
-  }
+  },
+  turn: 'player'
 };
 
 function safeGetCell(matrix, row, col) {
@@ -46,7 +47,7 @@ function findAllCellsOfFigure(cell, matrix, figure) {
 
 function checkSizes(cells) {
   const matrix = [];
-  for(const cell of cells.filter(item => item.filled)) {
+  for(const cell of cells.filter(item => item.filled && item.row && item.col)) {
     if(!matrix[cell.row]) {
       matrix[cell.row] = [];
     }
@@ -68,7 +69,6 @@ function checkSizes(cells) {
       figures.push(newFigure)
     }
   }
-  console.log(figures)
   const sizeCounts = [
     0,
     4,
@@ -105,14 +105,17 @@ export const game = {
     setCellFilled({commit}, {row, col, board}) {
       commit('setCellFilled', {row, col, board})
     },
-    setActive({commit}) {
-      commit('setActive')
+    setActive({commit}, {board}) {
+      commit('setActive', {board})
     },
     setCellFired({commit}, {row, col, board}) {
       commit('setCellFired', {row, col, board})
     },
     setCellMissed({commit}, {row, col, board}) {
       commit('setCellMissed', {row, col, board})
+    },
+    setTurn({commit}, {turn}) {
+      commit('setTurn', {turn})
     }
   },
   mutations: {
@@ -159,8 +162,18 @@ export const game = {
       }
       cell.missed = true;
     },
-    setActive(state) {
-      state.playerBoard.active = true
+    setActive(state, {board}) {
+      let stateBoard;
+      if(board === 'enemy') {
+        stateBoard = state.enemyBoard;
+      }
+      else if(board === 'player') {
+        stateBoard = state.playerBoard;
+      }
+      stateBoard.active = true
+    },
+    setTurn(state, {turn}) {
+      state.turn = turn
     }
   }
 };
