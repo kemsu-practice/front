@@ -2,7 +2,8 @@
   <div id="app">
     <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
       <a href class="navbar-brand" @click.prevent>Морское сражение</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+              aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
 
@@ -30,10 +31,9 @@
             </router-link>
           </li>
           <li class="nav-item">
-            <router-link to="/profile" class="nav-link">
-              <font-awesome-icon icon="user"/>
+              <span class="nav-link"><font-awesome-icon icon="user"/>
               {{ currentUser.name }}
-            </router-link>
+              </span>
           </li>
           <li class="nav-item">
             <a class="nav-link" href @click.prevent="logOut">
