@@ -1,71 +1,82 @@
 <template>
   <div class="container">
     <header class="jumbotron">
-      <h3>
-        Игра с {{ game.name }}
+      <h3 v-if="againstPlayerName">
+        Игра с {{ againstPlayerName }}
       </h3>
+      <h3 v-else>
+        Противника пока нет
+      </h3>
+
+      <button class="btn btn-success" @click="onJoin" v-if="canJoin">Присоединиться</button>
     </header>
-    <h3 class="text-center">
-      <span v-if="currentGame.turn === 'enemy' && currentGame.enemyBoard.active">Ход противника</span>
-      <span v-if="currentGame.turn === 'player' && currentGame.playerBoard.active">Ваш ход</span>
-    </h3>
-    <section class="row">
-      <div class="col-md-6">
-        <h4 @click="$store.dispatch('game/setTurn', { turn: 'player' })">Ваше поле</h4>
-        <table>
-          <tr>
-            <td></td>
-            <td v-for="col in 10" :key="col" class="game-cell" :class="cellClass(0, col, boards[0])">
-              {{ letters[col - 1] }}
-            </td>
-          </tr>
-          <tr v-for="row in 10" :key="row">
-            <td class="game-cell" :class="cellClass(row, 0, boards[0])">{{ row }}</td>
-            <td v-for="col in 10" :key="col" class="game-cell" @mouseover="hoverCell(row, col, boards[0])"
-                :class="cellClass(row, col, boards[0])" @click="clickedCell(row, col, boards[0])">
-              <span class="ship"></span>
-              <span class="missed"></span>
-              <span class="fired"></span>
-            </td>
-          </tr>
-        </table>
-        <ul>
-          <li v-for="(error,idx) in boardErrors" :key="idx">{{ error }}</li>
-        </ul>
-        <button v-if="boardErrors && !boardErrors.length && !this.currentGame.playerBoard.active" class="btn btn-success" @click="clickedReady">
-          Готов!
-        </button>
-      </div>
-      <div class="col-md-6 text-md-right pt-4 pt-md-0">
-        <h4 @click="$store.dispatch('game/setActive', { board: 'enemy' }); $store.dispatch('game/setTurn', { turn: 'enemy' })">
-          Поле противника
-        </h4>
-        <table class="float-md-right" v-if="this.currentGame.enemyBoard.active">
-          <tr>
-            <td></td>
-            <td v-for="col in 10" :key="col" class="game-cell" :class="cellClass(0, col, boards[1])">
-              {{ letters[col - 1] }}
-            </td>
-          </tr>
-          <tr v-for="row in 10" :key="row">
-            <td class="game-cell" :class="cellClass(row, 0, boards[1])">{{ row }}</td>
-            <td v-for="col in 10" :key="col" class="game-cell" @mouseover="hoverCell(row, col, boards[1])"
-                :class="cellClass(row, col, boards[1])" @click="clickedCell(row, col, boards[1])">
-              <span class="ship"></span>
-              <span class="missed"></span>
-              <span class="fired">🞨</span>
-            </td>
-          </tr>
-        </table>
-        <div v-else class="game-wait">
-          <h2>Противник расставляет корабли</h2>
+    <section v-if="myGame">
+      <h3 class="text-center" v-if="currentGame.status === 2">
+        <span v-if="!playerTurn">Ход противника</span>
+        <span v-if="playerTurn">Ваш ход</span>
+      </h3>
+      <section class="row">
+        <div class="col-md-6">
+          <h4 @click="$store.dispatch('game/setTurn', { turn: 'player' })">Ваше поле</h4>
+          <table>
+            <tr>
+              <td></td>
+              <td v-for="col in 10" :key="col" class="game-cell" :class="cellClass(0, col, boards[0])">
+                {{ letters[col - 1] }}
+              </td>
+            </tr>
+            <tr v-for="row in 10" :key="row">
+              <td class="game-cell" :class="cellClass(row, 0, boards[0])">{{ row }}</td>
+              <td v-for="col in 10" :key="col" class="game-cell" @mouseover="hoverCell(row, col, boards[0])"
+                  :class="cellClass(row, col, boards[0])" @click="clickedCell(row, col, boards[0])">
+                <span class="ship"></span>
+                <span class="missed"></span>
+                <span class="fired"></span>
+              </td>
+            </tr>
+          </table>
+          <ul>
+            <li v-for="(error,idx) in boardErrors" :key="idx">{{ error }}</li>
+          </ul>
+          <button v-if="!boardErrors?.length && this.currentGame.playerStatus === 0"
+                  class="btn btn-success" @click="clickedReady">
+            Готов!
+          </button>
         </div>
-      </div>
+        <div class="col-md-6 text-md-right pt-4 pt-md-0" v-if="againstPlayerName">
+          <h4
+            @click="$store.dispatch('game/setActive', { board: 'enemy' }); $store.dispatch('game/setTurn', { turn: 'enemy' })">
+            Поле противника
+          </h4>
+          <table class="float-md-right" v-if="this.currentGame.enemyStatus === 1">
+            <tr>
+              <td></td>
+              <td v-for="col in 10" :key="col" class="game-cell" :class="cellClass(0, col, boards[1])">
+                {{ letters[col - 1] }}
+              </td>
+            </tr>
+            <tr v-for="row in 10" :key="row">
+              <td class="game-cell" :class="cellClass(row, 0, boards[1])">{{ row }}</td>
+              <td v-for="col in 10" :key="col" class="game-cell" @mouseover="hoverCell(row, col, boards[1])"
+                  :class="cellClass(row, col, boards[1])" @click="clickedCell(row, col, boards[1])">
+                <span class="ship"></span>
+                <span class="missed"></span>
+                <span class="fired">🞨</span>
+              </td>
+            </tr>
+          </table>
+          <div v-else class="game-wait">
+            <h2>Противник расставляет корабли</h2>
+          </div>
+        </div>
+      </section>
     </section>
   </div>
 </template>game
 
 <script>
+
+import GamesService from '../services/games.service';
 
 class Board {
   constructor(owner) {
@@ -94,26 +105,60 @@ export default {
     },
     boardErrors() {
       return this.$store.state.game.playerBoard.errors
+    },
+    myGame() {
+      if (this.currentGame.enemyUser?.id === this.currentUser?.id || this.currentGame.playerUser?.id === this.currentUser?.id) {
+        return true;
+      }
+      return false;
+    },
+    againstPlayerName() {
+      if (this.currentGame.enemyUser && this.currentGame.enemyUser.id !== this.currentUser.id) {
+        return this.currentGame.enemyUser.name;
+      }
+      if (this.currentGame.playerUser && this.currentGame.playerUser.id !== this.currentUser.id) {
+        return this.currentGame.playerUser.name;
+      }
+      return null;
+    },
+    canJoin() {
+      if (!this.myGame) {
+        if (!this.currentGame.enemyUser || this.currentGame.playerUser) {
+          return true;
+        }
+      }
+      return false;
+    },
+    playerTurn() {
+      return this.currentGame.turn === this.currentUser.id;
     }
   },
   data: () => ({
     letters: ['a', 'б', 'в', 'г', 'д', 'е', 'ж', 'з', 'и', 'к'],
-    game:
-      {
-        'id': 1,
-        'name': 'Иванов',
-        'date': '15.12.2022 10:20'
-      },
     boards: [
       new Board('player'),
       new Board('enemy')
-    ]
+    ],
+    gameFetchInterval: null
   }),
   mounted() {
     if (!this.currentUser) {
       this.$router.push('/login');
     }
     this.$store.dispatch('game/setCellFilled', {})
+    this.fetchGame();
+
+    if(!this.gameFetchInterval) {
+      this.gameFetchInterval = setInterval(() => {
+        this.fetchGame();
+      }, 5000)
+    }
+  },
+  destroyed() {
+    if(this.gameFetchInterval) {
+      clearInterval(this.gameFetchInterval)
+      this.gameFetchInterval = null;
+    }
   },
   methods: {
     cellClasses: (cell) => {
@@ -139,28 +184,43 @@ export default {
         if (cell.fired) {
           classes.push('game-filled-fired')
         }
-      } else if(cell && cell.fired) {
+      } else if (cell && cell.fired) {
         classes.push('game-fired')
       } else if (cell && cell.missed) {
         classes.push('game-missed')
       }
+      const shot = gameBoard.shots.find(item => item.row === row && item.col === col);
+      if (shot && !shot.Field) {
+        classes.push('game-missed')
+      }
+      if (shot && shot.Field) {
+        classes.push('game-fired')
+      }
+
       return classes
     },
-    clickedCell(row, col, board) {
-      if (board.owner === 'player' && !this.currentGame.playerBoard.active) {
+    async clickedCell(row, col, board) {
+      if (board.owner === 'player' && this.currentGame.playerStatus === 0) {
         this.$store.dispatch('game/setCellFilled', {row, col})
       }
-      if (board.owner === 'enemy' && this.currentGame.enemyBoard.active) {
-        this.$store.dispatch('game/setCellMissed', {row, col, board: board.owner})
-      }
-      if (board.owner === 'player' && this.currentGame.playerBoard.active) {
-        this.$store.dispatch('game/setCellMissed', {row, col, board: board.owner})
+      if (board.owner === 'enemy' && this.currentGame.enemyStatus === 1) {
+        await GamesService.shot(this.currentGame.id, row, col)
+        await this.fetchGame();
+        //this.$store.dispatch('game/setCellMissed', {row, col, board: board.owner})
       }
     },
     clickedReady() {
+      GamesService.sendField(this.$route.params.id, this.currentGame.playerBoard.cells)
       if (!this.boardErrors.length) {
-        this.$store.dispatch('game/setActive', { board: 'player' })
+        this.$store.dispatch('game/setActive', {board: 'player'})
       }
+    },
+    fetchGame() {
+      return this.$store.dispatch('game/fetch', {id: this.$route.params.id})
+    },
+    async onJoin() {
+      await GamesService.join(this.$route.params.id)
+      await this.fetchGame();
     }
   }
 };

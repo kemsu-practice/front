@@ -1,107 +1,40 @@
 //import GameService from '../services/game.service';
 
+import GamesService from "@/services/games.service";
+import checkField from "@/services/checkField";
+
 const initialState = {
   enemyBoard: {
     active: false,
     cells: [],
+    shots: [],
   },
   playerBoard: {
     active: false,
     errors: [],
     cells: [],
+    shots: [],
   },
-  turn: 'player'
+  turn: null,
+
+  id: null,
+  playerUser: null,
+  enemyUser: null,
+  status: null,
+  playerStatus: null,
+  enemyStatus: null
 };
-
-function safeGetCell(matrix, row, col) {
-  if(!matrix[row]) {
-    return {}
-  }
-  if(!matrix[row][col]) {
-    return {}
-  }
-  return matrix[row][col]
-}
-
-function findAllCellsOfFigure(cell, matrix, figure) {
-  if(!cell || !cell.filled) {
-    return figure;
-  }
-  if(figure.some(item => item.row === cell.row && item.col === cell.col)) {
-    return figure;
-  }
-
-  figure.push({...cell});
-
-  let checkCell;
-  checkCell = safeGetCell(matrix, cell.row-1, cell.col);
-  findAllCellsOfFigure(checkCell, matrix, figure)
-  checkCell = safeGetCell(matrix, cell.row+1, cell.col);
-  findAllCellsOfFigure(checkCell, matrix, figure)
-  checkCell = safeGetCell(matrix, cell.row, cell.col-1);
-  findAllCellsOfFigure(checkCell, matrix, figure)
-  checkCell = safeGetCell(matrix, cell.row, cell.col+1);
-  findAllCellsOfFigure(checkCell, matrix, figure)
-  return figure
-}
-
-function checkSizes(cells) {
-  const matrix = [];
-  for(const cell of cells.filter(item => item.filled && item.row && item.col)) {
-    if(!matrix[cell.row]) {
-      matrix[cell.row] = [];
-    }
-    matrix[cell.row][cell.col] = cell;
-  }
-  const found = [];
-  const figures = [];
-
-  for(const row in matrix) {
-    for(const col in matrix[row]) {
-      const cell = matrix[row][col];
-      if(found.some(item => item.row === cell.row && item.col === cell.col)) {
-        continue;
-      }
-      const newFigure = findAllCellsOfFigure(cell, matrix, []);
-      for(const cell of newFigure) {
-        found.push(cell)
-      }
-      figures.push(newFigure)
-    }
-  }
-  const sizeCounts = [
-    0,
-    4,
-    3,
-    2,
-    1
-  ]
-  for(const figure of figures) {
-    if(!sizeCounts[figure.length]) {
-      sizeCounts[figure.length] = 0;
-    }
-    sizeCounts[figure.length]--;
-  }
-  const errors = [];
-  for(const idx in sizeCounts) {
-    if(idx > 4) {
-      errors.push('Слишком большой корабль: '+idx)
-      continue;
-    }
-    if(sizeCounts[idx] < 0) {
-      errors.push('Слишком много кораблей размера: '+idx + ', нужно убрать еще: '+ -sizeCounts[idx])
-    }
-    if(sizeCounts[idx] > 0) {
-      errors.push('Слишком мало кораблей размера: '+idx + ', нужно добавить еще: '+sizeCounts[idx])
-    }
-  }
-  return errors;
-}
 
 export const game = {
   namespaced: true,
   state: initialState,
   actions: {
+    fetch({commit}, {id}) {
+      return GamesService.get(id).then(({data: { game }}) => {
+          commit('setGame', {game})
+        }
+      )
+    },
     setCellFilled({commit}, {row, col, board}) {
       commit('setCellFilled', {row, col, board})
     },
@@ -126,7 +59,7 @@ export const game = {
         state.playerBoard.cells.push(cell)
       }
       cell.filled = !cell.filled;
-      state.playerBoard.errors = checkSizes(state.playerBoard.cells)
+      state.playerBoard.errors = checkField(state.playerBoard.cells)
     },
     setCellFired(state, {row, col, board}) {
       let stateBoard;
@@ -174,6 +107,23 @@ export const game = {
     },
     setTurn(state, {turn}) {
       state.turn = turn
+    },
+    setGame(state, {game}) {
+      if(state.id !== game.id) {
+        state.playerBoard.cells = [...game.playerFields.map(item => ({...item, filled: true}))];
+        state.playerBoard.errors = checkField(state.playerBoard.cells)
+      }
+      state.playerBoard.shots = [...game.playerShots];
+      state.enemyBoard.shots = [...game.enemyShots];
+
+      state.id = game.id;
+      state.playerUser = game.playerUser;
+      state.enemyUser = game.enemyUser;
+      state.status = game.status;
+      state.playerStatus = game.playerStatus;
+      state.enemyStatus = game.enemyStatus;
+      state.turn = game.turn;
+
     }
   }
 };

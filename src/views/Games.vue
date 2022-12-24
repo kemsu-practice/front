@@ -4,51 +4,47 @@
       <h3>
         Игры
       </h3>
+      <button class="btn btn-success" @click="onNewGame">Новая игра</button>
     </header>
 
-    <ul>
-      <li v-for="game in games" :key="game.id">
-        <router-link :to="`/games/${game.id}`">{{ game.name }}</router-link> - Игра создана: {{ game.date }}
+
+    <ul class="list-group">
+      <li v-for="game in games" :key="game.id" class="list-group-item">
+        <router-link :to="`/games/${game.id}`">{{ game.player.name }}</router-link>
+        <div class="float-right">
+          <time-ago :datetime="game.createdAt" refresh locale="ru" long />
+        </div>
       </li>
     </ul>
   </div>
 </template>
 
 <script>
+import GamesService from '../services/games.service';
+import {TimeAgo} from 'vue2-timeago'
+
 export default {
-  name: 'Profile',
+  name: 'Games',
+  components: {TimeAgo},
   computed: {
     currentUser() {
       return this.$store.state.auth.user;
+    },
+    games() {
+      return this.$store.state.games.games
     }
   },
-  data: () => ({
-      games: [
-        {
-          'id': 1,
-          'name': 'Иванов',
-          'date': '15.12.2022 10:20'
-        },
-        {
-          'id': 2,
-          'name': 'Петров',
-          'date': '15.12.2022 10:25'
-        },
-        {
-          'id': 3,
-          'name': 'Сидоров',
-          'date': '15.12.2022 10:26'
-        },
-        {
-          'id': 4,
-          'name': 'Леонтьев',
-          'date': '15.12.2022 10:30'
-        }
-      ],
-  }),
+  data: () => ({}),
   mounted() {
     if (!this.currentUser) {
       this.$router.push('/login');
+    }
+    this.$store.dispatch('games/fetch')
+  },
+  methods: {
+    async onNewGame() {
+      const {data} = await GamesService.create()
+      this.$router.push(`/games/${data.game.id}`)
     }
   }
 };
