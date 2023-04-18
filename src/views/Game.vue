@@ -151,7 +151,7 @@ export default {
     if(!this.gameFetchInterval) {
       this.gameFetchInterval = setInterval(() => {
         this.fetchGame();
-      }, 5000)
+      }, 1000)
     }
   },
   destroyed() {
@@ -204,9 +204,7 @@ export default {
         this.$store.dispatch('game/setCellFilled', {row, col})
       }
       if (board.owner === 'enemy' && this.currentGame.enemyStatus === 1) {
-        await GamesService.shot(this.currentGame.id, row, col)
-        await this.fetchGame();
-        //this.$store.dispatch('game/setCellMissed', {row, col, board: board.owner})
+        await this.shot(row, col);
       }
     },
     clickedReady() {
@@ -217,6 +215,10 @@ export default {
     },
     fetchGame() {
       return this.$store.dispatch('game/fetch', {id: this.$route.params.id})
+    },
+    async shot(row, col) {
+      const r = await this.$store.dispatch('game/shot', {id: this.$route.params.id, row, col})
+      console.log(r);
     },
     async onJoin() {
       await GamesService.join(this.$route.params.id)

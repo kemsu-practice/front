@@ -1,4 +1,6 @@
 import Vue from 'vue';
+import VuexFlash from 'vuex-flash';
+
 import App from './App.vue';
 import { router } from './router';
 import store from './store';
@@ -21,6 +23,7 @@ library.add(faHome, faUser, faUserPlus, faSignInAlt, faSignOutAlt, faGamepad);
 
 Vue.config.productionTip = false;
 
+Vue.use(VuexFlash, { mixin: true });
 Vue.use(VeeValidate);
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 

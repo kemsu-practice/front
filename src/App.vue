@@ -1,5 +1,9 @@
 <template>
   <div id="app">
+    <flash-message variant="success"></flash-message>
+    <flash-message variant="danger"></flash-message>
+    <flash-message variant="warning"></flash-message>
+
     <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
       <a href class="navbar-brand" @click.prevent>Морское сражение</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
@@ -45,7 +49,7 @@
       </div>
     </nav>
 
-    <div class="container">
+    <div class="container" @click="f">
       <router-view/>
     </div>
   </div>
@@ -62,7 +66,14 @@ export default {
     logOut() {
       this.$store.dispatch('auth/logout');
       this.$router.push('/login');
+    },
+    f() {
+      this.flash({ message: 'some message', variant: 'success' });
+      console.log('test', this.flash);
     }
+  },
+  mounted() {
+    this.f();
   }
 };
 </script>

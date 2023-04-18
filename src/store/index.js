@@ -1,6 +1,8 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 
+import { createFlashStore } from 'vuex-flash';
+
 import { auth } from './auth.module';
 import { game } from './game.module';
 import { games } from './games.module';
@@ -12,5 +14,9 @@ export default new Vuex.Store({
     auth,
     game,
     games
-  }
+  },
+
+  plugins: [
+    createFlashStore()
+  ]
 });

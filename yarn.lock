@@ -8465,6 +8465,11 @@ vue@^2.6.10:
     "@vue/compiler-sfc" "2.7.14"
     csstype "^3.1.0"
 
+vuex-flash@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/vuex-flash/-/vuex-flash-1.0.0.tgz#4bbeb2093d4857ddef45a6c50f10243539acee6e"
+  integrity sha512-717PqGvLpeMBkmW9ufSxgWe9w5gES2GzJ1xn2BspYjnRL3VML3m5SmLIfg2c4qm1BwOacnUAX5WLGJgl2YO0zQ==
+
 vuex@^3.0.1:
   version "3.6.2"
   resolved "https://registry.yarnpkg.com/vuex/-/vuex-3.6.2.tgz#236bc086a870c3ae79946f107f16de59d5895e71"
