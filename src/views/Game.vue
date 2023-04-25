@@ -29,9 +29,7 @@
               <td class="game-cell" :class="cellClass(row, 0, boards[0])">{{ row }}</td>
               <td v-for="col in 10" :key="col" class="game-cell" @mouseover="hoverCell(row, col, boards[0])"
                   :class="cellClass(row, col, boards[0])" @click="clickedCell(row, col, boards[0])">
-                <span class="ship"></span>
-                <span class="missed"></span>
-                <span class="fired"></span>
+                <div class="game-field" />
               </td>
             </tr>
           </table>
@@ -59,9 +57,7 @@
               <td class="game-cell" :class="cellClass(row, 0, boards[1])">{{ row }}</td>
               <td v-for="col in 10" :key="col" class="game-cell" @mouseover="hoverCell(row, col, boards[1])"
                   :class="cellClass(row, col, boards[1])" @click="clickedCell(row, col, boards[1])">
-                <span class="ship"></span>
-                <span class="missed"></span>
-                <span class="fired">🞨</span>
+                <div class="game-field" />
               </td>
             </tr>
           </table>
@@ -180,11 +176,12 @@ export default {
 
       const cell = gameBoard.cells.find(item => item.row === row && item.col === col);
       if (cell && cell.filled) {
-        classes.push('game-filled')
+        classes.push('game-ship')
         if (cell.fired) {
-          classes.push('game-filled-fired')
+          classes.push('game-fired')
         }
       } else if (cell && cell.fired) {
+        classes.push('game-ship')
         classes.push('game-fired')
       } else if (cell && cell.missed) {
         classes.push('game-missed')
@@ -194,6 +191,7 @@ export default {
         classes.push('game-missed')
       }
       if (shot && shot.Field) {
+        classes.push('game-ship')
         classes.push('game-fired')
       }
 
@@ -247,45 +245,33 @@ export default {
   text-align: center;
 }
 
+.game-field {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+}
+
 table:hover .game-cell.game-highlight {
   background: white;
 }
 
-.ship {
-  display: none;
-  width: 20px;
-  height: 20px;
+.game-ship .game-field {
   background: black;
   vertical-align: middle;
+  margin-top: -3px;
 }
 
-.missed {
-  display: none;
+.game-missed .game-field {
   width: 5px;
   height: 5px;
   background: black;
   border-radius: 5px;
   vertical-align: middle;
+  margin-top: -3px;
 }
 
-.fired {
-  display: none;
-  vertical-align: middle;
+.game-fired .game-field {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3C/defs%3E%3Cg%3E%3Cline style='stroke: rgb(255, 255, 255); fill: rgb(255, 255, 255);' x1='0' y1='20' x2='20' y2='0'%3E%3C/line%3E%3Cline style='fill: rgb(255, 255, 255); stroke: rgb(255, 255, 255);' x1='0' y1='0' x2='20' y2='20'%3E%3C/line%3E%3C/g%3E%3C/svg%3E");
 }
 
-.game-filled .ship {
-  display: inline-block;
-}
-
-.game-missed .missed {
-  display: inline-block;
-}
-
-.game-fired .fired {
-  display: inline-block;
-}
-
-.game-filled-fired .ship {
-  background-color: red;
-}
 </style>
